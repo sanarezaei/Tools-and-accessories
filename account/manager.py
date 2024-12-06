@@ -5,20 +5,20 @@ import random
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, phone_number, password=None,\
-        code=None, **extra_fields):
+        **extra_fields):
         if not username:
             raise ValueError("The username field is required.")
         if not phone_number:
             raise ValueError("The phone number is required")
         
         user = self.model(username=username, phone_number=phone_number,\
-            code=code, **extra_fields)
+            password=password, **extra_fields)
         user.set_password(password)
         user.save(using=self._db)
         return user 
     
     def create_superuser(self, username, phone_number, password=None,\
-        code=None, **extra_fields):
+        **extra_fields):
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         

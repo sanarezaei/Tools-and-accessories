@@ -10,6 +10,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255,unique=True, verbose_name='نام کاربری')
     phone_number = models.CharField(max_length=15, unique=True,\
         verbose_name='تلفن')
+    password = models.CharField(max_length=8, verbose_name='رمز عبور')
     email = models.EmailField(null=True, blank=True, verbose_name='ایمیل')
     is_staff = models.BooleanField(default=True)
     is_active = models.BooleanField(default=False)
