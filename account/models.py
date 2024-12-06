@@ -1,43 +1,33 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils.timezone import now
 
 from datetime import timedelta
 
-import random
+from .manager import OTPManager, CustomUserManager
 
-class CustomUser(AbstractUser):
-    username = models.CharField(max_length=255, verbose_name='نام کاربری')
+class CustomUser(AbstractBaseUser, PermissionsMixin):
+    username = models.CharField(max_length=255,unique=True, verbose_name='نام کاربری')
     phone_number = models.CharField(max_length=15, unique=True,\
         verbose_name='تلفن')
     email = models.EmailField(null=True, blank=True, verbose_name='ایمیل')
- 
+    is_staff = models.BooleanField(default=True)
+    is_active = models.BooleanField(default=False)
+    objects = CustomUserManager()
+    
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['phone_number']
+    
     def __str__(self):
         return self.username
     
- 
-class OTPManager(models.Manager):
-    def create_otp(self, phone_number):
-        otp_code = str(random.randint(10000, 99999))  
-        otp_instance = self.create(phone_number=phone_number, code=otp_code)
-        return otp_instance
-    
-    def validate_otp(self, phone_number, otp_code):
-        try: 
-            otp_instance = self.get(phone_number=phone_number, code=otp_code)
-            if otp_instance.is_valid():
-                return True
-            return False
-        except OTP.DoesNotExist:
-            return False
- 
-    
+     
 class OTP(models.Model):
     phone_number = models.CharField(max_length=15, unique=True,\
         verbose_name='شماره تلفن')
     code = models.CharField(max_length=5, verbose_name='کد ورود')
     created_at = models.DateTimeField(auto_now_add=True)
-    object = OTPManager()
+    objects = OTPManager()
     
     def is_valid(self):
         validity_period = timedelta(minutes=4)
