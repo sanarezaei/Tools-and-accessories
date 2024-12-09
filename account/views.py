@@ -1,38 +1,38 @@
 from django.shortcuts import render
-from django import views
+from django.views import View
 from django.contrib.auth import login, authenticate
 from django.contrib import messages
 from django.shortcuts import redirect, render
+from django.views.generic.edit import FormView
+from django.urls import reverse_lazy
 
 from .forms import LoginForm
 
-class LoginView(views):
-    template_name = 'login.html'
-    
+class HomeView(View):
     def get(self, request):
-        form = LoginForm()
-        return render(request, self.template_name, {'form': form})
+        user = self.request.user
+        phone_number = None
+        
+        if user.is_authenticated:
+            phone_number = user.phone_number
+        return render(request, 'account/home.html', 
+                    context={'phone_number': phone_number})
+
+class LoginView(FormView):
+    form_class = LoginForm
+    template_name = 'account/login.html'
+    success_url = reverse_lazy('home')
     
-    def post(self, request):
-        form = LoginForm(request.POST)
+    def form_valid(self, form):
+        phone_number = form.cleaned_data.get('phone_number')
+        password = form.cleaned_data.get('password')
+        user = authenticate(self.request, phone_number=phone_number, password=password)
         
-        if form.is_valid():
-            phone_number = form.cleaned_data['phone_number']
-            password = form.cleaned_data['password']
-        
-            user = authenticate(request, username=phone_number, password=password)
-            
-            if user is not None:
-                login(request, user)
-                
-                messages.success(request, "شما با موفقیت وارد شدید.")
-                return redirect('home')
-            else:
-                messages.error(request,\
-                    "شماره تلفن یا رمز عبور شما نامعتبر است.")
+        if user is not None:
+            login(self.request, user)
+            messages.success(self.request, 'با موفقیت وارد شدید.')
+            return super().form_valid(form)
         else:
-            messages.error(request, "لطفا فرم ورود را به درستی تکمیل کنید.")
-            
-        return render(request, self.template_name, {'form': form})
-            
+            messages.error(self.request, 'نام کاربری یا رمز عبور اشتباه است.')
+            return super().form_invalid(form)
         

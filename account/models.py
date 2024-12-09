@@ -4,7 +4,7 @@ from django.utils.timezone import now
 
 from datetime import timedelta
 
-from .manager import OTPManager, CustomUserManager
+from .managers import OTPManager, CustomUserManager
 
 class CustomUser(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(max_length=255,unique=True, verbose_name='نام کاربری')
@@ -12,8 +12,8 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         verbose_name='تلفن')
     password = models.CharField(max_length=8, verbose_name='رمز عبور')
     email = models.EmailField(null=True, blank=True, verbose_name='ایمیل')
-    is_staff = models.BooleanField(default=True)
-    is_active = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     objects = CustomUserManager()
     
     USERNAME_FIELD = 'username'
@@ -40,7 +40,7 @@ class OTP(models.Model):
         
 class Address(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE,\
-        related_name='custom_user')
+        related_name='address')
     first_name = models.CharField(max_length=255, verbose_name='نام')
     last_name = models.CharField(max_length=255, verbose_name='نام خانوادگی')
     province = models.CharField(max_length=255, verbose_name='استان')
